@@ -1,61 +1,57 @@
 
+use crate::lib::parsers::common::{Rule, Symbol, Action, Table, NonTerminal, Terminal, EOF};
+use super::itemset::ItemSet;
+use super::item::Item;
 
-use super::super::grammar::{Rule, Symbol};
-use super::super::grammar::itemset::ItemSet;
-use super::super::grammar::item::Item;
+use std::collections::{HashSet, HashMap}; 
 
-use super::{Table, Action, Conflict};
-
-use std::cmp::Eq;
-use std::fmt::Debug;
-use std::hash::Hash;
-use std::collections::{HashSet, HashMap};
-
-pub fn generate_table<Terminal: Eq + Hash + Clone + Debug, NonTerminal: Eq + Hash + Clone + Debug>(
-    rules: &Vec<Rule<Terminal, NonTerminal>>, 
+pub struct CLR1Analyser<'r> {
+    rules: &'r Vec<Rule>,
+    table: Table,
     start: NonTerminal,
-    conflict_action: Conflict
-) -> Table<Terminal, NonTerminal> {
-    let mut generator = Generator::new(rules, start, conflict_action);
-    generator.generate_table();
-    return generator.table;
-} 
-
-pub struct Generator<'rules, Terminal, NonTerminal> {
-    rules: &'rules Vec<Rule<Terminal, NonTerminal>>,
-    table: Table<Terminal, NonTerminal>,
-    start: NonTerminal,
-    states: Vec<ItemSet<'rules, Terminal, NonTerminal>>,
+    states: Vec<ItemSet<'r>>,
     state_index: usize,
-    first_set: HashMap<Symbol<Terminal, NonTerminal>, HashSet<Symbol<Terminal, NonTerminal>>>,
+    first_set: HashMap<Symbol, HashSet<Symbol>>,
 }
 
-impl<'rules, Terminal: Eq + Hash + Clone + Debug, NonTerminal: Eq + Hash + Clone + Debug> Generator<'rules, Terminal, NonTerminal>{
+impl<'r> CLR1Analyser<'r>{
 
-    fn new(rules: &'rules Vec<Rule<Terminal, NonTerminal>>, start: NonTerminal, conflict_action: Conflict) -> Self {
-        return Self{ 
+    pub fn new(rules: &'r Vec<Rule>, start: NonTerminal) -> Self {
+        let mut analyser = Self{ 
             rules, 
             start,
-            table: Table::new(conflict_action),
+            table: Table::new(),
             states: Vec::new(),
             state_index: 0,
             first_set: HashMap::new()
         };
+
+        analyser.generate_table();
+
+        return analyser;
+    }
+
+    pub fn get_states(&self) -> &Vec<ItemSet<'r>>{
+        return &self.states;
+    }
+
+    pub fn get_table(&self) -> &Table{
+        return &self.table;
     }
 
     fn generate_first_set(&mut self) {
         let (terms, nonterms) = self.unique_symbols();
         let mut first_set = HashMap::new();
-        let mut empty: HashSet<Symbol<_, _>> = HashSet::new();
+        let mut empty = HashSet::new();
         
         for nonterm in nonterms {
             first_set.insert(nonterm, HashSet::new());
         }
        
-        for term in terms {
+        for term in &terms {
             let mut set = HashSet::new();
             set.insert(term.clone());
-            first_set.insert(term, set);
+            first_set.insert(term.clone(), set);
         }
 
         loop {
@@ -90,16 +86,16 @@ impl<'rules, Terminal: Eq + Hash + Clone + Debug, NonTerminal: Eq + Hash + Clone
 
     }
 
-    fn unique_symbols(&self) -> (HashSet<Symbol<Terminal, NonTerminal>>, HashSet<Symbol<Terminal, NonTerminal>>) {
+    pub fn unique_symbols(&self) -> (HashSet<Symbol>, HashSet<Symbol>) {
         let mut terminals = HashSet::new();
         let mut nonterminals = HashSet::new();
         for rule in self.rules {
             for sym in rule.get_symbols() {
-                match sym {
-                    Symbol::Terminal(term, value) => { terminals.insert(Symbol::Terminal(term.clone(), *value)); },
-                    Symbol::NonTerminal(nonterm) => { nonterminals.insert(Symbol::NonTerminal(nonterm.clone())); },
-                    Symbol::EndOfTokenStream => {}
-                };
+                if sym.is_terminal() {
+                    terminals.insert(sym.clone());
+                }else{
+                    nonterminals.insert(sym.clone());
+                }
             }
 
             nonterminals.insert(rule.get_lhs_as_sym());
@@ -114,7 +110,7 @@ impl<'rules, Terminal: Eq + Hash + Clone + Debug, NonTerminal: Eq + Hash + Clone
 
         let start_rules = self.find_rules_by_lhs(&self.start);
         let start_rule = start_rules.first().expect("No rule with lhs of start symbol found");
-        let start_item = Item::new(&start_rule, 0, Symbol::EndOfTokenStream);
+        let start_item = Item::new(&start_rule, 0, Symbol::Terminal(Terminal::new(EOF.to_string(), true)));
         let start_set = ItemSet::from_kernel(vec![start_item]);
         self.states.push(start_set);
         
@@ -127,7 +123,7 @@ impl<'rules, Terminal: Eq + Hash + Clone + Debug, NonTerminal: Eq + Hash + Clone
 
     }
 
-    fn find_rules_by_lhs(&self, lhs: &NonTerminal) -> Vec<&'rules Rule<Terminal, NonTerminal>> {
+    pub fn find_rules_by_lhs(&self, lhs: &NonTerminal) -> Vec<&'r Rule> {
         let mut rules = Vec::new();
         for rule in self.rules {
             if rule.get_lhs() == lhs {
@@ -138,7 +134,7 @@ impl<'rules, Terminal: Eq + Hash + Clone + Debug, NonTerminal: Eq + Hash + Clone
         return rules;
     }
 
-    fn find_state_index(&self, set: &ItemSet<'rules, Terminal, NonTerminal>) -> Option<usize>{
+    pub fn find_state_index(&self, set: &ItemSet<'r>) -> Option<usize>{
         for (i, match_set) in self.states.iter().enumerate(){
             if set.is_same_kernel(match_set){
                 return Some(i)
@@ -170,7 +166,7 @@ impl<'rules, Terminal: Eq + Hash + Clone + Debug, NonTerminal: Eq + Hash + Clone
         }
     }
 
-    fn goto(&mut self, sym: Symbol<Terminal, NonTerminal>){
+    fn goto(&mut self, sym: Symbol){
         let mut new_set = ItemSet::new();
         
         // Create a new set of items from the current item set,
@@ -191,10 +187,9 @@ impl<'rules, Terminal: Eq + Hash + Clone + Debug, NonTerminal: Eq + Hash + Clone
             return self.states.len();
         });
 
-        match sym.clone() { 
-            Symbol::NonTerminal(non_term) => self.table.insert_goto(self.state_index, non_term.clone(), index),
-            Symbol::Terminal(term, value) => self.table.insert_action(index, Symbol::Terminal(term, value), Action::Shift(self.state_index)),
-            Symbol::EndOfTokenStream => panic!("Do not use 'EndOfTokenStream' symbol explicitly in grammar")
+        match sym { 
+            Symbol::NonTerminal(non_term) => self.table.insert_goto(self.state_index, non_term, index),
+            term => self.table.insert_action(index, term, Action::Shift(self.state_index)),
         }
     }
 
@@ -226,10 +221,7 @@ impl<'rules, Terminal: Eq + Hash + Clone + Debug, NonTerminal: Eq + Hash + Clone
 
     }
 
-    fn close_set(&self, 
-        set: &HashSet<Item<Terminal, NonTerminal>>, 
-        already_closed: &mut HashSet<Symbol<Terminal, NonTerminal>>
-    ) -> HashSet<Item<'rules, Terminal, NonTerminal>> {
+    fn close_set(&self, set: &HashSet<Item>, already_closed: &mut HashSet<Symbol>) -> HashSet<Item<'r>> {
         // This function only shallowly closes an item. the resulting set may return unclosed items.
 
         let mut result = HashSet::new();
@@ -250,7 +242,7 @@ impl<'rules, Terminal: Eq + Hash + Clone + Debug, NonTerminal: Eq + Hash + Clone
         return result;
     }
 
-    fn close_item(&self, item: &Item<Terminal, NonTerminal>) -> HashSet<Item<'rules, Terminal, NonTerminal>>{
+    fn close_item(&self, item: &Item) -> HashSet<Item<'r>>{
         // This function only shallowly closes an item. the resulting set may return unclosed items.
         let mut result = HashSet::new();
 
@@ -264,7 +256,7 @@ impl<'rules, Terminal: Eq + Hash + Clone + Debug, NonTerminal: Eq + Hash + Clone
                 let look_aheads = self.first_set.get(item.get_following_active())
                     .expect(&format!("Fatal error, first set does not contain {:?}", item.get_following_active())); 
 
-                for rule in self.find_rules_by_lhs(lhs) {
+                for rule in self.find_rules_by_lhs(&lhs) {
                     for look_ahead in look_aheads {
                         let item = Item::new(rule, 0, look_ahead.clone()); 
                         result.insert(item);

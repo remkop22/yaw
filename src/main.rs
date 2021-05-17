@@ -1,37 +1,19 @@
 
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum ExprType {
-    Expression,
-    Assignment,
-    Statement
-}
-
-#[derive(Debug, Copy, Clone, PartialEq, Eq, Hash)]
-pub enum TokenType {
-    Keyword,
-    Operator,
-    Seperator,
-    Number,
-    String,
-    Identifier,
-    Whitespace,
-}
-
 mod lib;
-use TokenType::*;
-use ExprType::*;
-use lib::grammar::{Symbol::*, Rule};
-use lib::table::{generate_table, Conflict};
+use lib::common::{Symbol, Rule, Terminal, NonTerminal};
+use lib::parsers::clr1::CLR1Analyser;
 
 
 fn main() {
 
     let rules = vec![ 
-        Rule::new(Assignment, vec![Terminal(Identifier, None), Terminal(Operator, "=".into()), Terminal(Identifier, None)]),
-        Rule::new(Statement, vec![NonTerminal(Assignment),Terminal(Seperator, ";".into())]),
+        Rule::new(NonTerminal::new("".to_string()), vec![
+            Symbol::Terminal(Terminal::new("".to_string(), true) )
+        ], true, 0),
     ];
 
-    let table = generate_table(&rules, Statement, Conflict::Panic);
+    let analyser = CLR1Analyser::new(&rules, NonTerminal::new("".to_string()));
+    let table = analyser.get_table();
     println!("{:?}", table.get_actions().keys());
     println!("{:?}", table.get_gotos().keys());
 

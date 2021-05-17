@@ -1,40 +1,46 @@
 
-
-use super::Action;
-use super::super::grammar::Symbol;
-
+use super::{Rule, Symbol, NonTerminal};
 use std::collections::HashMap;
-use std::hash::Hash;
 
-pub enum Conflict {
-    Warn,
-    Panic,
-    Ignore
+#[derive(Clone)]
+pub enum Action {
+    Shift(usize),
+    Reduce(Rule),
+    Accept,
+    Error
 }
 
-pub struct Table<Terminal, NonTerminal> {
-    action: HashMap<usize, HashMap<Symbol<Terminal, NonTerminal>, Action<Terminal, NonTerminal>>>,
+pub struct Conflict {
+    pub first_action: Action,
+    pub second_action: Action,
+    pub symbol: Symbol,
+    pub state: usize
+}
+
+pub struct Table{
+    action: HashMap<usize, HashMap<Symbol, Action>>,
     goto: HashMap<usize, HashMap<NonTerminal, usize>>,
-    conflict_action: Conflict 
+    conflicts: Vec<Conflict>
 }
 
-impl<Terminal: Eq + Hash, NonTerminal: Eq + Hash> Table<Terminal, NonTerminal> {
-    pub fn new(conflict_action: Conflict) -> Self {
+impl Table {
+    pub fn new() -> Self {
         return Self { 
             action: HashMap::new(), 
             goto: HashMap::new(),
-            conflict_action
+            conflicts: Vec::new() 
         };
     }
 
-    pub fn insert_action(&mut self, index: usize, terminal: Symbol<Terminal, NonTerminal>, action: Action<Terminal, NonTerminal>) {
+    pub fn insert_action(&mut self, index: usize, terminal: Symbol, action: Action) {
         if let Some(row) = self.action.get_mut(&index) {
             if row.contains_key(&terminal){
-                match self.conflict_action {
-                    Conflict::Warn => eprintln!("Conflict found!"),
-                    Conflict::Panic => panic!("Conflict found!"),
-                    Conflict::Ignore => {}
-                }
+                self.conflicts.push(Conflict {
+                    first_action: row[&terminal].clone(),
+                    second_action: action.clone(),
+                    state: index,
+                    symbol: terminal.clone()
+                });
             } 
             
             row.insert(terminal, action);
@@ -55,8 +61,12 @@ impl<Terminal: Eq + Hash, NonTerminal: Eq + Hash> Table<Terminal, NonTerminal> {
         }
     }
 
-    pub fn get_actions(&self) -> &HashMap<usize, HashMap<Symbol<Terminal, NonTerminal>, Action<Terminal, NonTerminal>>> {
+    pub fn get_actions(&self) -> &HashMap<usize, HashMap<Symbol, Action>> {
         return &self.action;
+    }
+
+    pub fn get_conflicts(&self) -> &Vec<Conflict> {
+        return &self.conflicts;
     }
     
     pub fn get_gotos(&self) -> &HashMap<usize, HashMap<NonTerminal, usize>> {

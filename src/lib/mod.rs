@@ -1,6 +1,5 @@
 
-pub mod tokenizer;
-pub mod parser;
-pub mod grammar;
-pub mod table;
-pub mod generator;
+mod generator;
+mod lexing;
+pub mod parsers;
+pub use self::parsers::common;
