@@ -1,5 +1,5 @@
 
-use super::token::{ TokenPattern, Token };
+use super::grammar::{ TokenPattern, Token };
 
 use std::error;
 use std::fmt;
@@ -34,8 +34,7 @@ impl<'a, 'b, TokenType: Copy> Iterator for Tokenizer<'a, 'b, TokenType> {
             if let Ok(0) = self.source.read_line(&mut self.buffer){
                 return None; 
             }
-
-       }
+        }
        
         loop {
 
