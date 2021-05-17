@@ -1,1 +1,1 @@
-# Reel - A reel good parsing toolkit for rust
+# Reel - A reel good parsing toolkit for Rust
