@@ -1,6 +1,4 @@
 
-mod token;
-mod tokenizer;
-
-pub use token::*;
-pub use tokenizer::*;
+pub mod lexer;
+pub mod generator;
+pub mod parser;
