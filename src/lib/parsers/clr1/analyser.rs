@@ -1,5 +1,5 @@
 
-use crate::lib::parsers::common::{Rule, Symbol, Action, Table, NonTerminal, Terminal, EOF};
+use crate::lib::parsers::common::{Rule, Symbol, Action, Table, NonTerminal, Terminal, EOF, Analyser};
 use super::itemset::ItemSet;
 use super::item::Item;
 
@@ -57,7 +57,7 @@ impl<'r> CLR1Analyser<'r>{
         loop {
             let mut updated = false;
 
-            for rule in self.rules {
+            for rule in self.get_rules() {
                 let mut lhs_set = first_set[&rule.get_lhs_as_sym()].clone();
                 let mut all_empty = false;
                
@@ -121,17 +121,6 @@ impl<'r> CLR1Analyser<'r>{
             self.state_index += 1;
         }
 
-    }
-
-    pub fn find_rules_by_lhs(&self, lhs: &NonTerminal) -> Vec<&'r Rule> {
-        let mut rules = Vec::new();
-        for rule in self.rules {
-            if rule.get_lhs() == lhs {
-                rules.push(rule);
-            }
-        }
-        
-        return rules;
     }
 
     pub fn find_state_index(&self, set: &ItemSet<'r>) -> Option<usize>{
@@ -266,6 +255,14 @@ impl<'r> CLR1Analyser<'r>{
         }
 
         return result;
+    }
+
+}
+
+impl<'r> Analyser<'r> for CLR1Analyser<'r> {
+
+    fn get_rules(&self) -> &'r Vec<Rule> {
+        return self.rules;
     }
 
 }
