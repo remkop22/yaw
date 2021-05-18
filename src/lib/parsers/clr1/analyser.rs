@@ -86,24 +86,6 @@ impl<'r> CLR1Analyser<'r>{
 
     }
 
-    pub fn unique_symbols(&self) -> (HashSet<Symbol>, HashSet<Symbol>) {
-        let mut terminals = HashSet::new();
-        let mut nonterminals = HashSet::new();
-        for rule in self.rules {
-            for sym in rule.get_symbols() {
-                if sym.is_terminal() {
-                    terminals.insert(sym.clone());
-                }else{
-                    nonterminals.insert(sym.clone());
-                }
-            }
-
-            nonterminals.insert(rule.get_lhs_as_sym());
-        }
-
-        return (terminals, nonterminals);
-    } 
-
     fn generate_table(&mut self) {
        
         self.generate_first_set();

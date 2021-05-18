@@ -1,5 +1,6 @@
 
 use super::{ Symbol, Rule, NonTerminal };
+use std::collections::HashSet;
 
 pub trait Analyser<'r> {
    
@@ -15,6 +16,24 @@ pub trait Analyser<'r> {
         
         return rules;
     }
+
+    fn unique_symbols(&self) -> (HashSet<Symbol>, HashSet<Symbol>) {
+        let mut terminals = HashSet::new();
+        let mut nonterminals = HashSet::new();
+        for rule in self.get_rules() {
+            for sym in rule.get_symbols() {
+                if sym.is_terminal() {
+                    terminals.insert(sym.clone());
+                }else{
+                    nonterminals.insert(sym.clone());
+                }
+            }
+
+            nonterminals.insert(rule.get_lhs_as_sym());
+        }
+
+        return (terminals, nonterminals);
+    } 
 
 
     
