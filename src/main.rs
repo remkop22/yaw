@@ -1,6 +1,6 @@
 
 mod lib;
-use lib::common::{Symbol, Rule, Terminal, NonTerminal};
+use lib::common::{Symbol, Rule, Terminal, NonTerminal, LRAnalyser};
 use lib::parsers::clr1::CLR1Analyser;
 
 
@@ -12,10 +12,11 @@ fn main() {
         ], true, 0),
     ];
 
-    let analyser = CLR1Analyser::new(&rules, NonTerminal::new("".to_string()));
-    let table = analyser.get_table();
-    println!("{:?}", table.get_actions().keys());
-    println!("{:?}", table.get_gotos().keys());
+    let analyser = CLR1Analyser::new(&rules, &rules[0]);
+    let table = analyser.table();
+
+    println!("{:?}", table.actions().keys());
+    println!("{:?}", table.gotos().keys());
 
 }
 

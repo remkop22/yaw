@@ -1,15 +1,15 @@
 
-use super::item::Item;
-use crate::lib::parsers::common::Symbol;
+use super::{ Symbol, Item };
 
 use std::collections::HashSet;
+use std::hash::Hash;
 
-pub struct ItemSet<'r> {
-    kernel: HashSet<Item<'r>>,
-    closure: HashSet<Item<'r>>
+pub struct ItemSet<I> {
+    kernel: HashSet<I>,
+    closure: HashSet<I>
 }
 
-impl<'r> ItemSet<'r> {
+impl<I: Eq + Hash + Item> ItemSet<I> {
 
     pub fn new() -> Self {
         return Self {
@@ -18,7 +18,7 @@ impl<'r> ItemSet<'r> {
         };
     }
 
-    pub fn from_kernel(kernel_items: Vec<Item<'r>>) -> Self {
+    pub fn from_kernel(kernel_items: Vec<I>) -> Self {
         let mut kernel = HashSet::new();
 
         for item in kernel_items {
@@ -42,23 +42,23 @@ impl<'r> ItemSet<'r> {
         return symbols;
     }
    
-    pub fn get_kernel(&self) -> &HashSet<Item<'r>> {
+    pub fn get_kernel(&self) -> &HashSet<I> {
         return &self.kernel;
     }
     
-    pub fn extend_closure(&mut self, closure: HashSet<Item<'r>>) {
+    pub fn extend_closure(&mut self, closure: HashSet<I>) {
         self.closure.extend(closure);
     }
 
-    pub fn all(&self) -> std::collections::hash_set::Union<Item<'r>, std::collections::hash_map::RandomState> {
+    pub fn all(&self) -> std::collections::hash_set::Union<I, std::collections::hash_map::RandomState> {
         return self.kernel.union(&self.closure);
     }
 
-    pub fn insert_kernel(&mut self, item: Item<'r>) -> bool {
+    pub fn insert_kernel(&mut self, item: I) -> bool {
         return self.kernel.insert(item);
     }
 
-    pub fn is_same_kernel(&self, other_set: &ItemSet<'r>) -> bool {
+    pub fn is_same_kernel(&self, other_set: &ItemSet<I>) -> bool {
         return self.kernel == other_set.kernel;
     } 
 
