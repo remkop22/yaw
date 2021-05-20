@@ -95,18 +95,21 @@ pub trait LRAnalyser<'r, I: Item> : Analyser<'r> {
     fn reduce_item(&self, item: &I) -> (Symbol, Action); 
 
     fn reduce_state(&mut self, index: usize){
+        let mut actions = Vec::new();
         for item in self.states()[index].all() {
             // If item is at the end it means a reduce action of it's rule is appropriate.
             if !item.is_active() {
-                let (sym, action) = self.reduce_item(item);
-                self.table_mut().insert_action(index, sym, action);
+                actions.push(self.reduce_item(item));
             }
         } 
+        
+        for (symbol, action) in actions {
+            self.table_mut().insert_action(index, symbol, action);
+        }
     }
     
-    fn generate_table(&mut self) -> Table {
+    fn generate_table(&mut self) {
 
-        let table = Table::new();
         let mut index = 0;
 
         while index < self.states().len() {
@@ -115,8 +118,6 @@ pub trait LRAnalyser<'r, I: Item> : Analyser<'r> {
             self.reduce_state(index);
             index += 1;
         }
-
-        return table
 
     }
 

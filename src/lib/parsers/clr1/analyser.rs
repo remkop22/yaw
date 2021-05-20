@@ -14,7 +14,7 @@ pub struct CLR1Analyser<'r> {
 
 impl<'r> CLR1Analyser<'r>{
 
-    pub fn new(rules: &'r Vec<Rule>, start: &Rule) -> Self {
+    pub fn new(rules: &'r Vec<Rule>, start: &'r Rule) -> Self {
 
         let start_item = LR1Item::new(start, 0, Symbol::Terminal(Terminal::new(EOF.to_string(), true)));
         let start_set = ItemSet::from_kernel(vec![start_item]);
@@ -27,8 +27,8 @@ impl<'r> CLR1Analyser<'r>{
             first_set: HashMap::new()
         };
 
-        analyser.first_set = analyser.generate_first_set();
-        analyser.table = analyser.generate_table();
+        analyser.generate_first_set();
+        analyser.generate_table();
 
         return analyser;
     } 
@@ -45,22 +45,21 @@ impl<'r> Analyser<'r> for CLR1Analyser<'r> {
 
 impl<'r> LRAnalyser<'r, LR1Item<'r>> for CLR1Analyser<'r> {
 
-    fn get_states(&self) -> &Vec<ItemSet<LR1Item<'r>>> {
+    fn states(&self) -> &Vec<ItemSet<LR1Item<'r>>> {
         return &self.states;
     }
 
-    fn get_states_mut(&mut self) -> &mut Vec<ItemSet<LR1Item<'r>>> {
+    fn states_mut(&mut self) -> &mut Vec<ItemSet<LR1Item<'r>>> {
         return &mut self.states;
     }
 
-    fn get_table(&self) -> &Table{
+    fn table(&self) -> &Table{
         return &self.table;
     }
 
-    fn get_table_mut(&mut self) -> &mut Table{
+    fn table_mut(&mut self) -> &mut Table{
         return &mut self.table;
     }
-
 
     fn reduce_item(&self, item: &LR1Item<'r>) -> (Symbol, Action) {
         // If the rule to reduce is the start rule we should insert an 'Accept' action,
