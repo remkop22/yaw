@@ -31,7 +31,7 @@ impl<I: Eq + Hash + Item> ItemSet<I> {
         }
     }
 
-    pub fn get_active_symbols(&self) -> HashSet<Symbol> {
+    pub fn active_symbols(&self) -> HashSet<Symbol> {
         let mut symbols = HashSet::new();
         for item in self.all() {
             if let Some(sym) = item.active_symbol() {
