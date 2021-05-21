@@ -43,7 +43,7 @@ impl Symbol {
         }
     }
 
-    pub fn get_name(&self) -> &str {
+    pub fn name(&self) -> &str {
         match self {
             Self::Terminal(t) => &t.name[..],
             Self::NonTerminal(nt) => &nt.name[..]

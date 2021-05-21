@@ -72,10 +72,10 @@ impl<'r> LRAnalyser<'r, LR1Item<'r>> for CLR1Analyser<'r> {
     fn reduce_item(&self, item: &LR1Item<'r>) -> (Symbol, Action) {
         // If the rule to reduce is the start rule we should insert an 'Accept' action,
         // if not we insert a normal reduce action.
-        if item.get_lhs() == self.start.lhs() {
-            (item.get_look_ahead().clone(), Action::Accept)
+        if item.rule().lhs() == self.start.lhs() {
+            (item.look_ahead().clone(), Action::Accept)
         } else {
-            (item.get_look_ahead().clone(), Action::Reduce(item.get_rule().clone()))
+            (item.look_ahead().clone(), Action::Reduce(item.rule().clone()))
         }
     }
 
@@ -85,13 +85,13 @@ impl<'r> LRAnalyser<'r, LR1Item<'r>> for CLR1Analyser<'r> {
 
         // In order to close an item, it must be active and it's active symbol must be a reference to other rules.
         // If this is not the case the resulting closure consists of an empty set.
-        if let Some(sym) = item.get_active_symbol() {
+        if let Some(sym) = item.active_symbol() {
             if let Symbol::NonTerminal(lhs) = sym {
                 // Find the first set of the symbol following the active symbol, 
                 // if the item is not active or there is no symbol following the active symbol,
                 // use the the look_ahead of this item.
-                let look_aheads = self.first_set.get(item.get_following_active())
-                    .expect(&format!("Fatal error, first set does not contain {:?}", item.get_following_active())); 
+                let look_aheads = self.first_set.get(item.following_active())
+                    .expect(&format!("Fatal error, first set does not contain {:?}", item.following_active())); 
 
                 for rule in self.find_rules_by_lhs(&lhs) {
                     for look_ahead in look_aheads {

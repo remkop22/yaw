@@ -136,7 +136,7 @@ pub trait LRAnalyser<'r, I: Item> : Analyser<'r> {
         let mut already_closed = HashSet::new();
 
         // Fill the queue with initial closure of the kernel.
-        queue.extend(self.close_set(self.states()[index].get_kernel(), &mut already_closed));
+        queue.extend(self.close_set(self.states()[index].kernel(), &mut already_closed));
         
         let mut new_queue = HashSet::new();
         loop {
@@ -160,7 +160,7 @@ pub trait LRAnalyser<'r, I: Item> : Analyser<'r> {
     }
     
     fn goto_state(&mut self, index: usize){
-        for sym in self.states()[index].get_active_symbols(){
+        for sym in self.states()[index].active_symbols(){
             self.goto_symbol(index, sym);
         }
     }
@@ -172,7 +172,7 @@ pub trait LRAnalyser<'r, I: Item> : Analyser<'r> {
         // If an item in the set is active we should close on the active symbol,
         // if not it should be ingored.
         for item in set {
-            if let Some(sym) = item.get_active_symbol() {
+            if let Some(sym) = item.active_symbol() {
                 // 'already_closed' keeps a record of all previously closed symbols,
                 // if the active symbol of 'item' is already in this set it can be assumed that the
                 // resulting closure is already present somewhere. Without this, recursion problems would occure.
@@ -192,7 +192,7 @@ pub trait LRAnalyser<'r, I: Item> : Analyser<'r> {
         // Create a new set of items from the current item set,
         // where each item has an active symbol equal to sym.
         for item in self.states()[index].all() {
-            if let Some(active_sym) = item.get_active_symbol() {
+            if let Some(active_sym) = item.active_symbol() {
                 if active_sym == &sym {
                     new_set.insert_kernel(item.advance().unwrap());
                 }

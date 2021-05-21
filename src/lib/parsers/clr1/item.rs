@@ -14,15 +14,15 @@ impl<'r> LR1Item<'r> {
         return Self {rule, index, look_ahead}
     }
 
-    pub fn get_following_active(&self) -> &Symbol {
+    pub fn following_active(&self) -> &Symbol {
         if self.index + 1 < self.rule.symbols().len() {
             return &self.rule.symbols()[self.index + 1];
         } else {
-            return self.get_look_ahead();
+            return self.look_ahead();
         }
     }
 
-    pub fn get_look_ahead(&self) -> &Symbol {
+    pub fn look_ahead(&self) -> &Symbol {
         return &self.look_ahead;
     }
     
@@ -30,11 +30,11 @@ impl<'r> LR1Item<'r> {
 
 impl<'r> Item for LR1Item<'r> {
 
-    fn get_index(&self) -> usize {
+    fn index(&self) -> usize {
         return self.index;
     }
 
-    fn get_rule(&self) -> &Rule {
+    fn rule(&self) -> &Rule {
         return self.rule;
     }
 

@@ -34,7 +34,7 @@ impl<I: Eq + Hash + Item> ItemSet<I> {
     pub fn get_active_symbols(&self) -> HashSet<Symbol> {
         let mut symbols = HashSet::new();
         for item in self.all() {
-            if let Some(sym) = item.get_active_symbol() {
+            if let Some(sym) = item.active_symbol() {
                 symbols.insert(sym.clone());
             }
         }
@@ -42,7 +42,7 @@ impl<I: Eq + Hash + Item> ItemSet<I> {
         return symbols;
     }
    
-    pub fn get_kernel(&self) -> &HashSet<I> {
+    pub fn kernel(&self) -> &HashSet<I> {
         return &self.kernel;
     }
     
