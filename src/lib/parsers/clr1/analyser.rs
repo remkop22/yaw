@@ -37,7 +37,15 @@ impl<'r> CLR1Analyser<'r>{
 
 impl<'r> Analyser<'r> for CLR1Analyser<'r> {
 
-    fn get_rules(&self) -> &'r Vec<Rule> {
+    fn first_set(&self) -> &HashMap<Symbol, HashSet<Symbol>> {
+        return &self.first_set;
+    }
+
+    fn first_set_mut(&mut self) -> &mut HashMap<Symbol, HashSet<Symbol>> {
+        return &mut self.first_set;
+    }
+
+    fn rules(&self) -> &'r Vec<Rule> {
         return self.rules;
     }
 
@@ -64,7 +72,7 @@ impl<'r> LRAnalyser<'r, LR1Item<'r>> for CLR1Analyser<'r> {
     fn reduce_item(&self, item: &LR1Item<'r>) -> (Symbol, Action) {
         // If the rule to reduce is the start rule we should insert an 'Accept' action,
         // if not we insert a normal reduce action.
-        if item.get_lhs() == self.start.get_lhs() {
+        if item.get_lhs() == self.start.lhs() {
             (item.get_look_ahead().clone(), Action::Accept)
         } else {
             (item.get_look_ahead().clone(), Action::Reduce(item.get_rule().clone()))

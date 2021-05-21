@@ -20,15 +20,15 @@ pub trait Item: Sized + Eq + Hash + Clone {
     }
 
     fn get_lhs(&self) -> &NonTerminal {
-        return self.get_rule().get_lhs();
+        return self.get_rule().lhs();
     }
 
     fn get_active_symbol(&self) -> Option<&Symbol> { 
-        return self.get_rule().get_symbols().get(self.get_index());
+        return self.get_rule().symbols().get(self.get_index());
     }
         
     fn is_active(&self) -> bool {
-        return self.get_index() < self.get_rule().get_symbols().len();
+        return self.get_index() < self.get_rule().symbols().len();
     }
 
 

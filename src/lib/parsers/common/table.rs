@@ -36,7 +36,6 @@ impl Table {
     pub fn insert_action(&mut self, index: usize, terminal: Symbol, action: Action) {
         if let Some(row) = self.action.get_mut(&index) {
             if row.contains_key(&terminal){
-                println!("confict");
                 self.conflicts.push(Conflict {
                     first_action: row[&terminal].clone(),
                     second_action: action.clone(),
@@ -52,7 +51,6 @@ impl Table {
             self.action.insert(index, row);
         }
 
-        println!("{:?}", self.action.keys())
     }
 
     pub fn insert_goto(&mut self, index: usize, lhs: NonTerminal, to_state: usize){

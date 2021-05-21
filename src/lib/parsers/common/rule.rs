@@ -15,15 +15,15 @@ impl Rule {
         return Self{ lhs, symbols, keep_all, priority }
     }
 
-    pub fn get_lhs(self: &Self) -> &NonTerminal {
+    pub fn lhs(&self) -> &NonTerminal {
         return &self.lhs;
     }
 
-    pub fn get_lhs_as_sym(&self) -> Symbol {
+    pub fn lhs_as_sym(&self) -> Symbol {
         return Symbol::NonTerminal(self.lhs.clone());
     }
 
-    pub fn get_symbols(self: &Self) -> &Vec<Symbol> {
+    pub fn symbols(&self) -> &Vec<Symbol> {
         return &self.symbols;
     }
 

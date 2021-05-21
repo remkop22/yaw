@@ -15,8 +15,8 @@ impl<'r> LR1Item<'r> {
     }
 
     pub fn get_following_active(&self) -> &Symbol {
-        if self.index + 1 < self.rule.get_symbols().len() {
-            return &self.rule.get_symbols()[self.index + 1];
+        if self.index + 1 < self.rule.symbols().len() {
+            return &self.rule.symbols()[self.index + 1];
         } else {
             return self.get_look_ahead();
         }

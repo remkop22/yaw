@@ -1,22 +1,22 @@
 
 
 pub trait Pattern {
-    fn is_match(self: &Self, text: &str) -> bool;
+    fn is_match(&self, text: &str) -> bool;
 }
 
 impl Pattern for regex::Regex {
-    fn is_match(self: &Self, text: &str) -> bool {
+    fn is_match(&self, text: &str) -> bool {
         return regex::Regex::is_match(self, text);
     }
 }
 
 impl Pattern for Vec<&str> {
-    fn is_match(self: &Self, text: &str) -> bool {
+    fn is_match(self, text: &str) -> bool {
         return self.contains(&text);
     }
 }
 
-pub struct TokenPattern<'pattern,T> {
+pub struct TokenPattern<'pattern, T> {
     kind: T,
     pattern: Box<dyn Pattern + 'pattern> 
 }
@@ -27,7 +27,7 @@ impl<'pattern, T> TokenPattern<'pattern, T> {
         return TokenPattern { kind, pattern: Box::new(pattern) }
     }
 
-    pub fn match_token(self: &Self, text: &str) -> Option<Token<T>> where T: Copy{
+    pub fn match_token(&self, text: &str) -> Option<Token<T>> where T: Copy{
         if self.pattern.is_match(text) {
             return Some(Token::new(self.kind, String::from(text)));
         } else {
@@ -47,11 +47,11 @@ impl<T> Token<T> {
         return Self { kind, value };
     }
 
-    pub fn get_kind(self: &Self) -> &T {
+    pub fn kind(&self) -> &T {
         return &self.kind;
     }
 
-    pub fn get_value(self: &Self) -> &str {
+    pub fn value(&self) -> &str {
         return &self.value[..];
     }
 }

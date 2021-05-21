@@ -4,12 +4,14 @@ use std::collections::{ HashSet, HashMap };
 
 pub trait Analyser<'r> {
    
-    fn get_rules(& self) -> &'r Vec<Rule>;
+    fn rules(&self) -> &'r Vec<Rule>;
+    fn first_set(&self) -> &HashMap<Symbol, HashSet<Symbol>>;
+    fn first_set_mut(&mut self) -> &mut HashMap<Symbol, HashSet<Symbol>>;
 
     fn find_rules_by_lhs(&self, lhs: &NonTerminal) -> Vec<&'r Rule> {
         let mut rules = Vec::new();
-        for rule in self.get_rules() {
-            if rule.get_lhs() == lhs {
+        for rule in self.rules() {
+            if rule.lhs() == lhs {
                 rules.push(rule);
             }
         }
@@ -17,31 +19,30 @@ pub trait Analyser<'r> {
         return rules;
     }
 
-    fn generate_first_set(&mut self) -> HashMap<Symbol, HashSet<Symbol>> {
+    fn generate_first_set(&mut self) {
         let (terms, nonterms) = self.unique_symbols();
-        let mut first_set = HashMap::new();
         let mut empty = HashSet::new();
         
         for nonterm in nonterms {
-            first_set.insert(nonterm, HashSet::new());
+            self.first_set_mut().insert(nonterm, HashSet::new());
         }
        
         for term in &terms {
             let mut set = HashSet::new();
             set.insert(term.clone());
-            first_set.insert(term.clone(), set);
+            self.first_set_mut().insert(term.clone(), set);
         }
 
         loop {
             let mut updated = false;
 
-            for rule in self.get_rules() {
-                let mut lhs_set = first_set[&rule.get_lhs_as_sym()].clone();
+            for rule in self.rules() {
+                let mut lhs_set = self.first_set_mut()[&rule.lhs_as_sym()].clone();
                 let mut all_empty = false;
                
-                for sym in rule.get_symbols() {
-                    updated = first_set[sym].is_subset(&lhs_set);
-                    lhs_set.extend(first_set[sym].clone());
+                for sym in rule.symbols() {
+                    updated = self.first_set_mut()[sym].is_subset(&lhs_set);
+                    lhs_set.extend(self.first_set_mut()[sym].clone());
                     if !empty.contains(sym) {
                         all_empty = true;
                         break;
@@ -49,10 +50,10 @@ pub trait Analyser<'r> {
                 }
 
                 if !all_empty {
-                    updated = empty.insert(rule.get_lhs_as_sym());
+                    updated = empty.insert(rule.lhs_as_sym());
                 }
 
-                first_set.insert(rule.get_lhs_as_sym(), lhs_set);
+                self.first_set_mut().insert(rule.lhs_as_sym(), lhs_set);
             }
 
             if !updated {
@@ -60,15 +61,14 @@ pub trait Analyser<'r> {
             }
         }
         
-        return first_set;
 
     }
 
     fn unique_symbols(&self) -> (HashSet<Symbol>, HashSet<Symbol>) {
         let mut terminals = HashSet::new();
         let mut nonterminals = HashSet::new();
-        for rule in self.get_rules() {
-            for sym in rule.get_symbols() {
+        for rule in self.rules() {
+            for sym in rule.symbols() {
                 if sym.is_terminal() {
                     terminals.insert(sym.clone());
                 }else{
@@ -76,7 +76,7 @@ pub trait Analyser<'r> {
                 }
             }
 
-            nonterminals.insert(rule.get_lhs_as_sym());
+            nonterminals.insert(rule.lhs_as_sym());
         }
 
         return (terminals, nonterminals);
