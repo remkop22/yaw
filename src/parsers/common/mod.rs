@@ -7,7 +7,7 @@ mod itemset;
 mod item;
 
 pub use rule::Rule;
-pub use symbol::{NonTerminal, Symbol, Terminal, EOF};
+pub use symbol::{Symbol};
 pub use table::{Table, Action};
 pub use analyser::{Analyser, LRAnalyser};
 pub use itemset::ItemSet;

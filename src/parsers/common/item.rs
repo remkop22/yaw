@@ -2,9 +2,9 @@ use super::{ Symbol, Rule };
 
 use std::hash::Hash;
 
-pub trait Item: Sized + Eq + Hash + Clone {
+pub trait Item<N, NT>: Sized + Eq + Hash + Clone {
 
-    fn rule(&self) -> &Rule;
+    fn rule(&self) -> &Rule<N, NT>;
 
     fn index(&self) -> usize;
     fn set_index(&mut self, index: usize);
@@ -19,7 +19,7 @@ pub trait Item: Sized + Eq + Hash + Clone {
         }
     }
 
-    fn active_symbol(&self) -> Option<&Symbol> { 
+    fn active_symbol(&self) -> Option<&Symbol<N, NT>> { 
         return self.rule().symbols().get(self.index());
     }
         
