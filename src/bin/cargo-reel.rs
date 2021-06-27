@@ -68,6 +68,8 @@ fn main() {
 	], 0);
 	
 	let args: Vec<String> = env::args().collect();
-	generate(args.get(1).unwrap(), Analyser::new(&grammar).table()).unwrap();
+ 	let file_name = args.get(2).unwrap();
+
+	generate(file_name, Analyser::new(&grammar).table()).unwrap();
 
 }

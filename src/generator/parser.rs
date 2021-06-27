@@ -8,11 +8,11 @@ pub trait Parser<T> {
 	fn next_token(&mut self) -> Token<T>;
 	fn action(&mut self, token: Token<T>);
 	fn state(&self) -> usize;
-	fn pop_state(&self);
-	fn push_state(&self, state: usize);
+	fn pop_state(&mut self);
+	fn push_state(&mut self, state: usize);
 	
-	fn push_token(&self, token: Token<T>);
-	fn push_rule(&self, rule_index: usize);
+	fn push_token(&mut self, token: Token<T>);
+	fn push_rule(&mut self, rule_index: usize);
 
 	fn parse(&mut self) {
 		loop {
