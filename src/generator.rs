@@ -60,8 +60,7 @@ where
 		.new_fn("action")
 		.arg_mut_self()
 		.arg("token", "Token<TokenType>")
-		.line("let token = self.next_token();")
-		.line("match (self.state(), token.kind) {");
+		.line("match (self.state(), &token.kind) {");
 
 	for (state, nt, action) in unique_actions {
 		let action_str =  match action {
