@@ -5,7 +5,7 @@ use std::fs;
 pub fn generate<T, NT>(file_name: &str, table: &Table<T, NT>) -> std::io::Result<()> {
 	let mut scope = Scope::new();
 
-	scope.import("reel::generator", "Parser");
+	scope.import("reel::generator", "{Parser, Token}");
 
 	scope.new_enum("TokenType");
 

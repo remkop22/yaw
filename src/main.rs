@@ -1,6 +1,7 @@
 use reel::analysis::Analyser;
 use reel::common::{Grammar, Rule, Symbol};
 use reel::generator::generate;
+use std::env;
 
 
 #[derive(Copy, Clone, Debug, PartialEq, Hash, Eq)]
@@ -28,6 +29,7 @@ use Symbol::*;
 use TerminalSymbols::*;
 
 fn main() {
+	
 
 	let grammar = Grammar::new(vec![
 		Rule::new(Expression, vec![Terminal(Identifier)]),
@@ -64,7 +66,8 @@ fn main() {
 			],
 		),
 	], 0);
-
-	generate("generated.rs", Analyser::new(&grammar).table()).unwrap();
+	
+	let args: Vec<String> = env::args().collect();
+	generate(args.get(1).unwrap(), Analyser::new(&grammar).table()).unwrap();
 
 }
