@@ -1,4 +1,4 @@
-use super::{Rule, Symbol};
+use crate::common::{Rule, Symbol};
 use std::collections::HashMap;
 use std::hash::Hash;
 
@@ -7,30 +7,30 @@ pub type ActionTable<Term, NonTerm> = HashMap<StateIndex, HashMap<Symbol<Term, N
 pub type GotoTable<NonTerm> = HashMap<StateIndex, HashMap<NonTerm, StateIndex>>;
 
 #[derive(Clone)]
-pub enum Action<Term, NonTerm> {
+pub enum Action<T, NT> {
 	Shift(StateIndex),
-	Reduce(Rule<Term, NonTerm>),
+	Reduce(Rule<T, NT>),
 	Accept,
 	Error,
 }
 
-pub struct Conflict<Term, NonTerm> {
-	pub first_action: Action<Term, NonTerm>,
-	pub second_action: Action<Term, NonTerm>,
-	pub symbol: Symbol<Term, NonTerm>,
+pub struct Conflict<T, NT> {
+	pub first_action: Action<T, NT>,
+	pub second_action: Action<T, NT>,
+	pub symbol: Symbol<T, NT>,
 	pub state: StateIndex,
 }
 
-pub struct Table<Term, NonTerm> {
-	action: ActionTable<Term, NonTerm>,
-	goto: GotoTable<NonTerm>,
-	conflicts: Vec<Conflict<Term, NonTerm>>,
+pub struct Table<T, NT> {
+	action: ActionTable<T, NT>,
+	goto: GotoTable<NT>,
+	conflicts: Vec<Conflict<T, NT>>,
 }
 
 impl<Term, NonTerm> Table<Term, NonTerm>
 where
-	Term: Eq + Hash,
-	NonTerm: Eq + Hash
+	Term: Eq + Hash + Copy,
+	NonTerm: Eq + Hash + Copy
 {
 
 	pub fn new() -> Self {
@@ -50,8 +50,8 @@ where
 		if let Some(row) = self.action.get_mut(&index) {
 			if row.contains_key(&terminal) {
 				self.conflicts.push(Conflict {
-					first_action: row[&terminal],
-					second_action: action,
+					first_action: row[&terminal].clone(),
+					second_action: action.clone(),
 					state: index,
 					symbol: terminal,
 				});
