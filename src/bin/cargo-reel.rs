@@ -22,6 +22,7 @@ enum NonTerminalSymbols {
 	Expression,
 	FunctionCall,
 	FunctionArgs,
+	Start
 }
 
 use NonTerminalSymbols::*;
@@ -32,6 +33,7 @@ fn main() {
 	
 
 	let grammar = Grammar::new(vec![
+		Rule::new(Start, vec![NonTerminal(Expression)]),
 		Rule::new(Expression, vec![Terminal(Identifier)]),
 		Rule::new(Expression, vec![NonTerminal(FunctionCall)]),
 		Rule::new(

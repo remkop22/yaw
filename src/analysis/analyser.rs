@@ -8,7 +8,7 @@ pub struct Analyser<'g, T, NT> {
 	table: Table<T, NT>,
 	states: Vec<ItemSet<'g, T, NT>>,
 	grammar: &'g Grammar<T, NT>,
-	first_set: HashMap<Symbol<T, NT>, HashSet<Symbol<T, NT>>>,
+	first_set: HashMap<Symbol<T, NT>, HashSet<T>>,
 }
 
 impl<'g, T, NT> Analyser<'g, T, NT>
@@ -18,7 +18,7 @@ where
 {
 
 	pub fn new(grammar: &'g Grammar<T, NT>) -> Self {
-		let start_item = Item::new(grammar.start_rule(), 0, Symbol::Terminal(T::eof()));
+		let start_item = Item::new(grammar.start_rule(), 0, T::eof());
 		let start_set = ItemSet::from_kernel(vec![start_item]);
 
 		let mut analyser = Self {
@@ -151,13 +151,13 @@ where
 			Symbol::NonTerminal(non_term) => {
 				self.table.insert_goto(index, non_term, to_state)
 			}
-			term => self
+			Symbol::Terminal(term) => self
 				.table
 				.insert_action(index, term, Action::Shift(to_state)),
 		}
 	}
 
-	fn reduce_item(&self, item: &Item<T, NT>) -> (Symbol<T, NT>, Action<T, NT>) {
+	fn reduce_item(&self, item: &Item<T, NT>) -> (T, Action<T, NT>) {
 		// If the rule to reduce is the start rule we should insert an 'Accept' action,
 		// if not we insert a normal reduce action.
 		if item.rule() == self.grammar.start_rule() {

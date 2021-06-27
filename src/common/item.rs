@@ -5,7 +5,7 @@ use std::hash::Hash;
 pub struct Item<'r, T, NT> {
 	rule: &'r Rule<T, NT>,
 	index: usize,
-	look_ahead: Symbol<T, NT>,
+	look_ahead: T,
 }
 
 impl<'r, T, NT> Item<'r, T, NT>
@@ -13,7 +13,7 @@ where
 	T: Copy,
 	NT: Copy,
 {
-	pub fn new(rule: &'r Rule<T, NT>, index: usize, look_ahead: Symbol<T, NT>) -> Self {
+	pub fn new(rule: &'r Rule<T, NT>, index: usize, look_ahead: T) -> Self {
 		return Self {
 			rule,
 			index,
@@ -45,11 +45,11 @@ where
 		if self.index + 1 < self.rule.symbols().len() {
 			return self.rule.symbols()[self.index + 1];
 		} else {
-			return self.look_ahead();
+			return Symbol::Terminal(self.look_ahead);
 		}
 	}
 
-	pub fn look_ahead(&self) -> Symbol<T, NT> {
+	pub fn look_ahead(&self) -> T {
 		return self.look_ahead;
 	}
 }

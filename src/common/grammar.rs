@@ -1,4 +1,4 @@
-use crate::common::{Rule, Symbol};
+use crate::common::{Rule, Symbol, Terminal};
 use std::collections::{HashMap, HashSet};
 use std::hash::Hash;
 
@@ -9,7 +9,7 @@ pub struct Grammar<T, NT> {
 
 impl<'sr, T, NT> Grammar<T, NT>
 where
-	T: Eq + Hash + Copy,
+	T: Terminal,
 	NT: Eq + Hash + Copy,
 {
 	pub fn new(rules: Vec<Rule<T, NT>>, start_rule: usize) -> Self {
@@ -28,38 +28,44 @@ where
 		&self.rules[self.start_rule]
 	}
 
-	fn unique_symbols(&self) -> HashSet<&Symbol<T, NT>> {
-		self.rules.iter().flat_map(|r| r.symbols()).collect()
-	}
-
-	fn unique_terminals(&self) -> HashSet<&Symbol<T, NT>> {
-		self.unique_symbols()
+	fn unique_symbols(&self) -> HashSet<Symbol<T, NT>> {
+		self.rules
 			.iter()
-			.filter(|s| s.is_terminal())
-			.map(|s| *s)
+			.flat_map(|r| {
+				let mut syms = r.symbols().clone();
+				syms.push(r.lhs_as_sym());
+				syms
+			})
+			.chain(std::iter::once(Symbol::Terminal(T::eof())))
 			.collect()
 	}
 
-	fn unique_nonterminals(&self) -> HashSet<&Symbol<T, NT>> {
+	fn unique_terminals(&self) -> HashSet<T> {
 		self.unique_symbols()
 			.iter()
-			.filter(|s| !s.is_terminal())
-			.map(|s| *s)
+			.flat_map(|s| s.terminal())
 			.collect()
 	}
 
-	pub fn first_set(&self) -> HashMap<Symbol<T, NT>, HashSet<Symbol<T, NT>>> {
+	fn unique_nonterminals(&self) -> HashSet<NT> {
+		self.unique_symbols()
+			.iter()
+			.flat_map(|s| s.non_terminal())
+			.collect()
+	}
+
+	pub fn first_set(&self) -> HashMap<Symbol<T, NT>, HashSet<T>> {
 		let mut first_set = HashMap::new();
 		let terms = self.unique_terminals();
 		let nonterms = self.unique_nonterminals();
 		let mut empty = HashSet::new();
 
 		for nonterm in nonterms {
-			first_set.insert(*nonterm, HashSet::new());
+			first_set.insert(Symbol::NonTerminal(nonterm), HashSet::new());
 		}
 
 		for term in terms {
-			first_set.insert(*term, vec![*term].into_iter().collect());
+			first_set.insert(Symbol::Terminal(term), vec![term].into_iter().collect());
 		}
 
 		loop {

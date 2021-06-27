@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use std::hash::Hash;
 
 pub type StateIndex = usize;
-pub type ActionTable<Term, NonTerm> = HashMap<StateIndex, HashMap<Symbol<Term, NonTerm>, Action<Term, NonTerm>>>;
+pub type ActionTable<Term, NonTerm> = HashMap<StateIndex, HashMap<Term, Action<Term, NonTerm>>>;
 pub type GotoTable<NonTerm> = HashMap<StateIndex, HashMap<NonTerm, StateIndex>>;
 
 #[derive(Clone)]
@@ -44,7 +44,7 @@ where
 	pub fn insert_action(
 		&mut self,
 		index: StateIndex,
-		terminal: Symbol<Term, NonTerm>,
+		terminal: Term,
 		action: Action<Term, NonTerm>,
 	) {
 		if let Some(row) = self.action.get_mut(&index) {
@@ -53,7 +53,7 @@ where
 					first_action: row[&terminal].clone(),
 					second_action: action.clone(),
 					state: index,
-					symbol: terminal,
+					symbol: Symbol::Terminal(terminal),
 				});
 			}
 
