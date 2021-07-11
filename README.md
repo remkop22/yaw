@@ -1,4 +1,4 @@
-# Yaw - A parser generator toolkit for Rust
+# Yaw - A parser generator written in Rust
 
 <b>This project is still in it's prototyping phase.</b>
 
