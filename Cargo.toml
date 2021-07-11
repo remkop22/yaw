@@ -1,5 +1,5 @@
 [package]
-name = "reel"
+name = "yaw"
 version = "0.1.0"
 authors = ["remopas <remopas@hotmail.nl>"]
 edition = "2018"

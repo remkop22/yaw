@@ -15,7 +15,7 @@ where
 	let mut scope = Scope::new();
 	let str_enum = Regex::new(r#"".*""#).unwrap();
 
-	scope.import("reel::runtime", "{Parser, Token}");
+	scope.import("yaw::runtime", "{Parser, Token}");
 
 	let tt_enum = scope.new_enum("TokenType");
 

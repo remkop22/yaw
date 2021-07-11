@@ -1,6 +1,7 @@
-use reel::analysis::Analyser;
-use reel::common::{Grammar, Rule, Symbol};
-use reel::generator::generate;
+use yaw::analysis::Analyser;
+use yaw::common::{Grammar, Rule, Symbol};
+use yaw::generator::generate;
+
 use std::env;
 
 
@@ -11,7 +12,7 @@ enum TerminalSymbols {
 	EOF
 }
 
-impl reel::common::Terminal for TerminalSymbols {
+impl yaw::common::Terminal for TerminalSymbols {
 	fn eof() -> Self {
 		Self::EOF
 	}
