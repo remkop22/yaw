@@ -1,41 +1,41 @@
 pub struct Token<T> {
-	pub span: (usize, usize),
-	pub kind: T,
+    pub span: (usize, usize),
+    pub kind: T,
 }
 
 pub trait Parser<T> {
-	fn next_token(&mut self) -> Token<T>;
-	fn action(&mut self, token: Token<T>);
-	fn state(&self) -> usize;
-	fn pop_state(&mut self);
-	fn push_state(&mut self, state: usize);
-	fn push_token(&mut self, token: Token<T>);
-	fn push_rule(&mut self, rule_index: usize);
+    fn next_token(&mut self) -> Token<T>;
+    fn action(&mut self, token: Token<T>);
+    fn state(&self) -> usize;
+    fn pop_state(&mut self);
+    fn push_state(&mut self, state: usize);
+    fn push_token(&mut self, token: Token<T>);
+    fn push_rule(&mut self, rule_index: usize);
 
-	fn parse(&mut self) {
-		loop {
-			let token = self.next_token();
-			self.action(token);
-		}
-	}
+    fn parse(&mut self) {
+        loop {
+            let token = self.next_token();
+            self.action(token);
+        }
+    }
 
-	fn shift(&mut self, shift_state: usize, token: Token<T>) {
-		self.push_token(token);
-		self.push_state(shift_state)
-	}
+    fn shift(&mut self, shift_state: usize, token: Token<T>) {
+        self.push_token(token);
+        self.push_state(shift_state)
+    }
 
-	fn reduce(&mut self, rule_index: usize) {
-		self.push_rule(rule_index);
-		self.pop_state();
-		self.goto(rule_index);
-	}
+    fn reduce(&mut self, rule_index: usize) {
+        self.push_rule(rule_index);
+        self.pop_state();
+        self.goto(rule_index);
+    }
 
-	fn goto(&mut self, rule_index: usize);
+    fn goto(&mut self, rule_index: usize);
 
-	fn error(&self) {
-		panic!("error!");
-	}
-	fn accept(&self) {
-		println!("accepted!");
-	}
+    fn error(&self) {
+        panic!("error!");
+    }
+    fn accept(&self) {
+        println!("accepted!");
+    }
 }
