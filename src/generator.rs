@@ -15,7 +15,7 @@ where
 	let mut scope = Scope::new();
 	let str_enum = Regex::new(r#"".*""#).unwrap();
 
-	scope.import("reel::generator", "{Parser, Token}");
+	scope.import("reel::runtime", "{Parser, Token}");
 
 	let tt_enum = scope.new_enum("TokenType");
 
@@ -56,7 +56,7 @@ where
 		.ret("Token<TokenType>")
 		.line("Token{ span: (0, 0), kind: TokenType::EOF }");
 
-	let mut action_fn = parser_impl
+	let action_fn = parser_impl
 		.new_fn("action")
 		.arg_mut_self()
 		.arg("token", "Token<TokenType>")
