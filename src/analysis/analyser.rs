@@ -2,6 +2,7 @@ use crate::analysis::{Action, Table};
 use crate::common::{Grammar, Item, ItemSet, Symbol, Terminal};
 
 use std::collections::{HashMap, HashSet};
+
 use std::hash::Hash;
 
 pub struct Analyser<'g, T, NT> {
@@ -32,8 +33,9 @@ where
         analyser
     }
 
-    pub fn table(&self) -> &Table<T, NT> {
-        &self.table
+    pub fn table(grammar: &'g Grammar<T, NT>) -> Table<T, NT> {
+        let analyzer = Self::new(grammar);
+		analyzer.table
     }
 
     fn reduce_state(&mut self, index: usize) {
@@ -146,7 +148,7 @@ where
         // else insert it into the states and use that index.
         let to_state = self.state_index(&new_set).unwrap_or_else(|| {
             self.states.push(new_set);
-            self.states.len()
+            self.states.len() - 1
         });
 
         match sym {

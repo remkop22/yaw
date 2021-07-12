@@ -1,6 +1,6 @@
 use crate::common::Symbol;
 
-#[derive(Eq, PartialEq, Hash, Clone)]
+#[derive(Eq, PartialEq, Hash, Clone, Debug)]
 pub struct Rule<T, NT> {
     lhs: NT,
     symbols: Vec<Symbol<T, NT>>,

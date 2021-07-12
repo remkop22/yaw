@@ -1,33 +1,59 @@
+use std::iter::Peekable;
+
 pub struct Token<T> {
     pub span: (usize, usize),
     pub kind: T,
 }
 
-pub struct ParseState<I, T> {
-    tokens: I,
+impl<T> Clone for Token<T>
+where
+    T: Clone,
+{
+    fn clone(&self) -> Self {
+        Self {
+            span: self.span,
+            kind: self.kind.clone(),
+        }
+    }
+}
+
+impl<T> Copy for Token<T> where T: Copy {}
+
+pub struct ParseState<I, T> where I: Iterator {
+    tokens: Peekable<I>,
     token_stack: Vec<Token<T>>,
     rule_stack: Vec<usize>,
     state_stack: Vec<usize>,
 }
-impl<I, T> ParseState<I, T> {
+
+impl<I, T> ParseState<I, T>
+where
+    I: Iterator<Item = Token<T>>,
+{
     pub fn new(tokens: I) -> Self {
         Self {
-            tokens,
+            tokens: tokens.peekable(),
             token_stack: Vec::new(),
             rule_stack: Vec::new(),
             state_stack: vec![0],
         }
     }
 }
+
 pub trait Parse<I, T>
 where
-    I: Iterator<Item = Token<T>>,
+    I: Iterator<Item = Token<T>> + 'static,
+	T: Copy
 {
     fn parse_state(&self) -> &ParseState<I, T>;
     fn parse_state_mut(&mut self) -> &mut ParseState<I, T>;
 
     fn next_token(&mut self) -> Option<Token<T>> {
         self.parse_state_mut().tokens.next()
+    }
+
+    fn current_token(&mut self) -> Option<&Token<T>> {
+        self.parse_state_mut().tokens.peek()
     }
 
     fn push_token(&mut self, token: Token<T>) {
@@ -58,7 +84,7 @@ where
 
     fn parse(&mut self) -> Result<(), ()> {
         loop {
-            if let Some(token) = self.parse_state_mut().tokens.next() {
+            if let Some(&token) = self.current_token() {
                 match self.action(token) {
                     Some(res) => break res,
                     None => {}
@@ -70,9 +96,9 @@ where
     }
 
     fn shift(&mut self, shift_state: usize, token: Token<T>) {
-        self.pop_state();
         self.push_token(token);
-        self.push_state(shift_state)
+        self.push_state(shift_state);
+		self.next_token();
     }
 
     fn reduce(&mut self, rule_index: usize) {

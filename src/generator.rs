@@ -3,10 +3,9 @@ use crate::common::Rule;
 use codegen::Scope;
 use regex::Regex;
 use std::collections::HashSet;
-use std::fmt::{format, Debug};
+use std::fmt::Debug;
 use std::fs;
 use std::hash::Hash;
-use std::ops::Deref;
 
 pub fn generate<T, NT>(file_name: &str, table: &Table<T, NT>) -> std::io::Result<()>
 where
@@ -43,7 +42,7 @@ where
     }
 
     unique_actions.sort_by_key(|a| *a.0);
-    let rules: Vec<&Rule<T, NT>> = unique_rules.into_iter().collect();
+    let rules: Vec<&Rule<T, NT>> = unique_rules.iter().copied().collect();
 
     for term in unique_terminals {
         tt_enum.new_variant(term.as_str());
@@ -98,10 +97,28 @@ where
     action_fn.line("}");
     action_fn.line("None");
 
-    parser_impl
+    let goto_fn = parser_impl
         .new_fn("goto")
         .arg_mut_self()
-        .arg("rule", "usize");
+        .arg("rule", "usize")
+        .line("let state = self.state();")
+        .line("let goto_state = match (rule, state) {");
+
+    for (state, gotos) in table.gotos() {
+        for (&nt, &goto_state) in gotos {
+            unique_rules
+                .iter()
+                .enumerate()
+                .filter_map(|(i, &r)| if r.lhs() == nt { Some(i) } else { None })
+                .for_each(|i| {
+                    goto_fn.line(format!("({}, {}) => {},", i, state, goto_state));
+                });
+        }
+    }
+
+    goto_fn.line("_ => panic!(\"unkown goto\")");
+    goto_fn.line("};");
+    goto_fn.line("self.push_state(goto_state)");
 
     fs::write(file_name, scope.to_string())
 }

@@ -6,7 +6,7 @@ pub type StateIndex = usize;
 pub type ActionTable<Term, NonTerm> = HashMap<StateIndex, HashMap<Term, Action<Term, NonTerm>>>;
 pub type GotoTable<NonTerm> = HashMap<StateIndex, HashMap<NonTerm, StateIndex>>;
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Action<T, NT> {
     Shift(StateIndex),
     Reduce(Rule<T, NT>),
@@ -14,6 +14,7 @@ pub enum Action<T, NT> {
     Error,
 }
 
+#[derive(Debug)]
 pub struct Conflict<T, NT> {
     pub first_action: Action<T, NT>,
     pub second_action: Action<T, NT>,

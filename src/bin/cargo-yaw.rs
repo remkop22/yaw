@@ -66,6 +66,8 @@ fn main() {
     );
 
     let args = env::args();
-	let file_name = args.skip(2).next().expect("No file name specified");
-    generate(&file_name, Analyser::new(&grammar).table()).unwrap();
+    let file_name = args.skip(2).next().expect("No file name specified");
+	let table = Analyser::table(&grammar);
+	println!("{:?}", table.conflicts());
+    generate(&file_name, &table).unwrap();
 }
