@@ -7,7 +7,9 @@ pub struct Grammar<T, NT> {
     start_rule: usize,
 }
 
-impl<'sr, T, NT> Grammar<T, NT>
+pub type FirstSet<T, NT> = HashMap<Symbol<T, NT>, HashSet<T>>;
+
+impl<T, NT> Grammar<T, NT>
 where
     T: Terminal,
     NT: Eq + Hash + Copy,
